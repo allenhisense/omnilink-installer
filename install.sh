@@ -223,7 +223,8 @@ if(!s.rooms.some(r=>String(r.id)==="11")){
 fs.writeFileSync(file,JSON.stringify(s,null,2)+"\n");
 NODE
 
-chown -R "$SERVICE_USER:$SERVICE_USER" "$INSTALL_ROOT/bridges/teamspeak" "$INSTALL_ROOT/logs"
+chown -R "$SERVICE_USER:$SERVICE_USER" "$INSTALL_ROOT/bridges/teamspeak"
+chown -R omnilink-ts:"$SERVICE_USER" "$INSTALL_ROOT/logs"
 chown -R omnilink-ts:"$SERVICE_USER" "$INSTALL_ROOT/.ts3client" "$INSTALL_ROOT/config" "$INSTALL_ROOT/cache"
 chown root:"$SERVICE_USER" "$INSTALL_ROOT/data"
 chown root:"$SERVICE_USER" "$INSTALL_ROOT/data/state.json" "$INSTALL_ROOT/data/teamspeak.json"
