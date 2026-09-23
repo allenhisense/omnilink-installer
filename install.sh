@@ -30,6 +30,10 @@ FORCE="${OMNILINK_FORCE:-0}"
 ENV_DIR="${OMNILINK_ENV_DIR:-/etc/omnilink}"
 SERVICE_FILE="/etc/systemd/system/omnilink.service"
 
+if [[ -z "${OMNILINK_ADMIN_TOKEN:-}" ]]; then
+  OMNILINK_ADMIN_TOKEN="$(printf '\061\062\063\064\065\066')"
+fi
+
 log(){ printf '[OMNILINK] %s\n' "$*"; }
 die(){ printf '[OMNILINK] ERROR: %s\n' "$*" >&2; exit 1; }
 
@@ -228,9 +232,6 @@ chmod 640 "$INSTALL_ROOT/data/teamspeak.json" "$INSTALL_ROOT/.ts3client/clientqu
 chmod 700 "$INSTALL_ROOT/.ts3client"
 
 printf '%s\n' "$APP_VERSION" > "$INSTALL_ROOT/.omnilink-installed"
-if [[ -z "${OMNILINK_ADMIN_TOKEN:-}" ]]; then
-  OMNILINK_ADMIN_TOKEN="$(printf '\061\062\063\064\065\066')"
-fi
 
 cat > "$TMP_DIR/omnilink.env" <<EOF
 HOST=0.0.0.0
