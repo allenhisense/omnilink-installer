@@ -151,7 +151,7 @@ while true; do
       rm -f "$PULSE_RUNTIME_PATH/pid" "$PULSE_RUNTIME_PATH/native"
     fi
   fi
-  pulseaudio --start --exit-idle-time=-1 >"$APP_HOME/logs/ts-pulse.log" 2>&1 || true
+  pulseaudio --file=/etc/pulse/default.pa --start --exit-idle-time=-1 >"$APP_HOME/logs/ts-pulse.log" 2>&1 || true
   PA_READY=0
   for _ in $(seq 1 20); do
     if [ -S "$PULSE_RUNTIME_PATH/native" ]; then PA_READY=1; break; fi
