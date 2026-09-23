@@ -85,7 +85,7 @@ cleanup(){ rm -rf "$TMP_DIR"; }
 trap cleanup EXIT
 mkdir -p "$TMP_DIR/payload"
 
-awk 'f{print} /^__OMNILINK_PAYLOAD__$/ {f=1; next} /^__OMNILINK_TS_BRIDGE__$/ {exit}' "$0" | base64 -d > "$TMP_DIR/release.tgz"
+awk '/^__OMNILINK_TS_BRIDGE__$/ {exit} /^__OMNILINK_PAYLOAD__$/ {f=1; next} f {print}' "$0" | base64 -d > "$TMP_DIR/release.tgz"
 tar -xzf "$TMP_DIR/release.tgz" -C "$TMP_DIR/payload"
 [[ -f "$TMP_DIR/payload/VERSION" ]] || die 'payload OmniLink tidak valid'
 mkdir -p "$TMP_DIR/bridge"
