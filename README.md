@@ -20,16 +20,20 @@ The installer is designed for a **fresh OMNILINK server**. It creates a clean se
 - Web Client
 - Admin Panel
 - Fresh server state/database
-- systemd service: `omnilink.service`
+- TeamSpeak Client **3.1.10**
+- TeamSpeak ClientQuery + OMNILINK TeamSpeak Bridge
+- Automatic TeamSpeak bridge watchdog/reconnect
+- systemd services for OMNILINK and the TeamSpeak stack
 - Initial admin password: `123456` (must be changed on first login)
-- Startup and health verification
+- Startup, TeamSpeak ClientQuery, bridge, and health verification
 
 ## Requirements
 
 ### Supported Linux architecture
 
 - x86_64 / amd64
-- arm64 / aarch64
+
+TeamSpeak Client 3.1.10 in this installer is x86_64/amd64 only.
 
 ### Runtime
 
@@ -158,6 +162,17 @@ Useful variables:
 | `OMNILINK_PUBLIC_HOST` | auto-detected public IP |
 | `OMNILINK_ENV_DIR` | `/etc/omnilink` |
 | `OMNILINK_ADMIN_TOKEN` | `123456` on fresh installation |
+| `OMNILINK_TS_SERVER_HOST` | `ts3.my.id` |
+| `OMNILINK_TS_VOICE_PORT` | `9987` |
+| `OMNILINK_TS_QUERY_PORT` | `10011` |
+| `OMNILINK_TS_NICKNAME` | `Universal OMNILINK Bridge` |
+| `OMNILINK_TS_CHANNEL_ID` | `3833` |
+| `OMNILINK_TS_CHANNEL_NAME` | `omni test` |
+| `OMNILINK_TS_CHANNEL_PASSWORD` | empty |
+| `OMNILINK_TS_SERVER_PASSWORD` | empty |
+| `OMNILINK_TS_CALLSIGN` | `TEST1` |
+| `OMNILINK_TS3_CLIENT_FILE` | empty; optional local TeamSpeak 3.1.10 installer file |
+| `OMNILINK_TS3_CLIENT_URL` | installer mirror for TeamSpeak 3.1.10 |
 | `OMNILINK_FORCE` | `0` |
 
 ## Reinstall
@@ -171,6 +186,18 @@ sudo OMNILINK_FORCE=1 bash install.sh
 ```
 
 **Warning:** reinstalling an existing installation can replace application files and should only be used intentionally.
+
+## TeamSpeak Services
+
+The installer manages the complete TeamSpeak stack automatically:
+
+```text
+omnilink-teamspeak-client.service
+omnilink-teamspeak-bridge.service
+omnilink-teamspeak-watchdog.service
+```
+
+The TeamSpeak Client version is fixed to **3.1.10** in this installer. The installer verifies the package SHA-256 before extraction.
 
 ## Service Management
 
@@ -200,14 +227,16 @@ sudo systemctl enable omnilink
 
 ## Firewall / Network
 
-The application listens on:
+The public application listens on:
 
 ```
 TCP 18787  HTTP
 TCP 18788  HTTPS (when TLS is configured)
 ```
 
-If the server is behind a firewall, reverse proxy, router, or cloud security group, allow the required port(s).
+The TeamSpeak Client connects outbound to the configured TeamSpeak server. ClientQuery (`127.0.0.1:25639`) and bridge health (`127.0.0.1:18891`) are local integration endpoints and should not be exposed publicly.
+
+If the server is behind a firewall, reverse proxy, router, or cloud security group, allow the required public application port(s).
 
 ## Security Notes
 
@@ -232,12 +261,12 @@ The public Linux installer intentionally does **not** package the live AJF/PP7 r
 - production database/state
 - production user and gateway tokens
 - TLS private keys
-- TeamSpeak/Mumble runtime state
+- TeamSpeak runtime state or ClientQuery API keys from PP7
 - PP7 logs
 - local cache/build artifacts
 - machine-specific configuration
 
-This keeps each new OMNILINK installation independent.
+The installer creates a new TeamSpeak 3.1.10 client profile and ClientQuery key on each machine, keeping every installation independent.
 
 ## Troubleshooting
 
