@@ -226,9 +226,10 @@ NODE
 chown -R "$SERVICE_USER:$SERVICE_USER" "$INSTALL_ROOT/bridges/teamspeak" "$INSTALL_ROOT/logs"
 chown -R omnilink-ts:"$SERVICE_USER" "$INSTALL_ROOT/.ts3client" "$INSTALL_ROOT/config" "$INSTALL_ROOT/cache"
 chown root:"$SERVICE_USER" "$INSTALL_ROOT/data"
+chown root:"$SERVICE_USER" "$INSTALL_ROOT/data/state.json" "$INSTALL_ROOT/data/teamspeak.json"
 chmod 770 "$INSTALL_ROOT/data"
 chmod 750 "$INSTALL_ROOT/bridges/teamspeak"
-chmod 640 "$INSTALL_ROOT/data/teamspeak.json" "$INSTALL_ROOT/.ts3client/clientquery.ini"
+chmod 640 "$INSTALL_ROOT/data/state.json" "$INSTALL_ROOT/data/teamspeak.json" "$INSTALL_ROOT/.ts3client/clientquery.ini"
 chmod 700 "$INSTALL_ROOT/.ts3client"
 
 printf '%s\n' "$APP_VERSION" > "$INSTALL_ROOT/.omnilink-installed"
