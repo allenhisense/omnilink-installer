@@ -21,7 +21,7 @@ The installer is designed for a **fresh OMNILINK server**. It creates a clean se
 - Admin Panel
 - Fresh server state/database
 - systemd service: `omnilink.service`
-- Automatic admin token generation
+- Initial admin password: `123456` (must be changed on first login)
 - Startup and health verification
 
 ## Requirements
@@ -61,13 +61,70 @@ Runtime data is stored below:
 
 ## After Installation
 
+### Access URLs
+
+The installer uses the **actual public IP address or hostname of the machine where OMNILINK is hosted**. It also prints the resolved addresses after installation.
+
+```text
+Web Client:
+http://SERVER_IP:18787/
+
+Admin Web:
+http://SERVER_IP:18787/admin/
+
+Server Address pada Android/PC Client:
+SERVER_IP:18787
+
+Health Check:
+http://SERVER_IP:18787/health
+```
+
+Replace `SERVER_IP` with the public IP address or DNS hostname of the OMNILINK server.
+
+Example for the laboratory VPS only:
+
+```text
+Web Client:
+http://38.47.180.47:18787/
+
+Admin Web:
+http://38.47.180.47:18787/admin/
+
+Server Address pada Android/PC Client:
+38.47.180.47:18787
+
+Health Check:
+http://38.47.180.47:18787/health
+```
+
+Other hosting environments must use their own public IP address or hostname. Use `OMNILINK_PUBLIC_HOST` when a public DNS name should be displayed by the installer.
+
+```bash
+sudo OMNILINK_PUBLIC_HOST=omnilink.example.com bash install.sh
+```
+
+For Android / PC clients, enter the **Server Address** in `HOST:PORT` format. Do not enter the Web Client or Admin Web URL in the native client server-address field.
+
+### Initial Admin Password
+
+Every fresh installation starts with:
+
+```text
+Callsign: ADMIN
+Initial password: 123456
+```
+
+The initial password is temporary. The administrator must change it on the first Admin Web login before normal administration is allowed.
+
+### Service Checks
+
 Check service status:
 
 ```bash
 sudo systemctl status omnilink
 ```
 
-Check health:
+Check health locally:
 
 ```bash
 curl http://127.0.0.1:18787/health
@@ -79,13 +136,7 @@ View logs:
 sudo journalctl -u omnilink -f
 ```
 
-The generated admin credential is stored locally on the server in:
-
-```
-/etc/omnilink/credentials.txt
-```
-
-Do not publish or share this file.
+Do not publish or commit administrator credentials.
 
 ## Configuration Overrides
 
@@ -104,8 +155,9 @@ Useful variables:
 | `OMNILINK_ROOT` | `/opt/omnilink` |
 | `OMNILINK_PORT` | `18787` |
 | `OMNILINK_HTTPS_PORT` | `18788` |
+| `OMNILINK_PUBLIC_HOST` | auto-detected public IP |
 | `OMNILINK_ENV_DIR` | `/etc/omnilink` |
-| `OMNILINK_ADMIN_TOKEN` | generated automatically |
+| `OMNILINK_ADMIN_TOKEN` | `123456` on fresh installation |
 | `OMNILINK_FORCE` | `0` |
 
 ## Reinstall
@@ -159,7 +211,7 @@ If the server is behind a firewall, reverse proxy, router, or cloud security gro
 
 ## Security Notes
 
-The installer generates a fresh administrator credential for each installation.
+Fresh installations use administrator callsign `ADMIN` and temporary password `123456`; the password must be changed at first login.
 
 Never commit:
 
