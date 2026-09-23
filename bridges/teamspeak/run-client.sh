@@ -1,17 +1,19 @@
 #!/bin/bash
 set -u
 
-HOME="${OMNILINK_HOME:-/opt/omnilink}"
-CFG="$HOME/data/teamspeak.json"
-RUNTIME="$HOME/data/teamspeak-runtime.json"
-LOG="$HOME/logs/ts-client.log"
+APP_HOME="${OMNILINK_HOME:-/opt/omnilink}"
+HOME="${HOME:-/var/lib/omnilink-ts}"
+CFG="$APP_HOME/data/teamspeak.json"
+RUNTIME="$APP_HOME/data/teamspeak-runtime.json"
+LOG="$APP_HOME/logs/ts-client.log"
 
 export HOME
+export OMNILINK_HOME="$APP_HOME"
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/omnilink-runtime}"
 export PULSE_RUNTIME_PATH="$XDG_RUNTIME_DIR/pulse"
 export PULSE_LATENCY_MSEC=120
-export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/config}"
-export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/cache}"
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$APP_HOME/config}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$APP_HOME/cache}"
 export DISPLAY="${DISPLAY:-:99}"
 export QT_X11_NO_MITSHM=1
 export QT_QPA_PLATFORM=xcb
@@ -20,11 +22,11 @@ export LIBGL_ALWAYS_SOFTWARE="${LIBGL_ALWAYS_SOFTWARE:-1}"
 export OPENSSL_CONF="${OPENSSL_CONF:-/dev/null}"
 TSCLIENT_DIR="${TSCLIENT_DIR:-/opt/teamspeak3-client-current}"
 
-mkdir -p "$XDG_RUNTIME_DIR" "$PULSE_RUNTIME_PATH" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME" "$HOME/logs"
+mkdir -p "$XDG_RUNTIME_DIR" "$PULSE_RUNTIME_PATH" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME" "$APP_HOME/logs"
 chmod 700 "$XDG_RUNTIME_DIR" "$PULSE_RUNTIME_PATH"
 
 # Singleton guard: only the systemd-owned supervisor may run the TeamSpeak client.
-LOCKFILE="$HOME/data/teamspeak-client.lock"
+LOCKFILE="$APP_HOME/data/teamspeak-client.lock"
 exec 9>"$LOCKFILE"
 if ! flock -n 9; then
   exit 0
@@ -84,7 +86,7 @@ PY
 
 
 query_connected() {
-  python3 - "$HOME/.ts3client/clientquery.ini" <<'PY'
+  python3 - "$APP_HOME/.ts3client/clientquery.ini" <<'PY'
 import socket,sys
 from pathlib import Path
 api=""
@@ -137,7 +139,7 @@ while true; do
 
   rm -f "/tmp/.X${DISPLAY#:}-lock"
 
-  Xvfb "$DISPLAY" -screen 0 1280x900x24 -nolisten tcp -extension RANDR >"$HOME/logs/ts-xvfb.log" 2>&1 &
+  Xvfb "$DISPLAY" -screen 0 1280x900x24 -nolisten tcp -extension RANDR >"$APP_HOME/logs/ts-xvfb.log" 2>&1 &
   XVFB=$!
   trap 'if [ -n "${CLIENT:-}" ]; then kill "$CLIENT" >/dev/null 2>&1 || true; fi; if [ -n "${CLIENT_WRAPPER:-}" ]; then kill "$CLIENT_WRAPPER" >/dev/null 2>&1 || true; fi; kill_ts_clients TERM; sleep 0.1; kill_ts_clients KILL; kill_ts_wrappers; pulseaudio --kill >/dev/null 2>&1 || true; kill "$XVFB" >/dev/null 2>&1 || true' EXIT INT TERM
   sleep 2
@@ -149,7 +151,7 @@ while true; do
       rm -f "$PULSE_RUNTIME_PATH/pid" "$PULSE_RUNTIME_PATH/native"
     fi
   fi
-  pulseaudio --start --exit-idle-time=-1 >"$HOME/logs/ts-pulse.log" 2>&1 || true
+  pulseaudio --start --exit-idle-time=-1 >"$APP_HOME/logs/ts-pulse.log" 2>&1 || true
   PA_READY=0
   for _ in $(seq 1 20); do
     if [ -S "$PULSE_RUNTIME_PATH/native" ]; then PA_READY=1; break; fi

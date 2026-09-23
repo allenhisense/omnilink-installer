@@ -138,9 +138,15 @@ mkdir -p "$INSTALL_ROOT/data" "$INSTALL_ROOT/bridges/teamspeak" "$INSTALL_ROOT/l
 if ! id -u "$SERVICE_USER" >/dev/null 2>&1; then
   useradd --system --home-dir "$INSTALL_ROOT" --shell /usr/sbin/nologin "$SERVICE_USER"
 fi
+TS_HOME="/var/lib/omnilink-ts"
 if ! id -u omnilink-ts >/dev/null 2>&1; then
-  useradd --system --home-dir "$INSTALL_ROOT" --shell /usr/sbin/nologin omnilink-ts
+  useradd --system --home-dir "$TS_HOME" --shell /usr/sbin/nologin omnilink-ts
+else
+  usermod -d "$TS_HOME" omnilink-ts >/dev/null 2>&1 || true
 fi
+mkdir -p "$TS_HOME"
+chown omnilink-ts:omnilink-ts "$TS_HOME"
+chmod 700 "$TS_HOME"
 usermod -a -G "$SERVICE_USER" omnilink-ts >/dev/null 2>&1 || true
 
 TS3_INSTALL_ROOT="/opt/teamspeak3-client-3.1.10"
@@ -298,9 +304,12 @@ Group=omnilink-ts
 SupplementaryGroups=$SERVICE_USER
 WorkingDirectory=$INSTALL_ROOT
 Environment=OMNILINK_HOME=$INSTALL_ROOT
+Environment=HOME=$TS_HOME
 Environment=XDG_CONFIG_HOME=$INSTALL_ROOT/config
 Environment=XDG_CACHE_HOME=$INSTALL_ROOT/cache
-Environment=XDG_RUNTIME_DIR=/tmp/omnilink-runtime
+Environment=XDG_RUNTIME_DIR=/run/omnilink-ts
+RuntimeDirectory=omnilink-ts
+RuntimeDirectoryMode=0700
 ExecStart=$INSTALL_ROOT/bridges/teamspeak/run-client.sh
 Restart=always
 RestartSec=3
