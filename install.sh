@@ -105,11 +105,25 @@ prepare_ts3(){
   else
     log "Downloading TeamSpeak Client $TS3_VERSION..."
     local dst="$TMP_DIR/$TS3_CLIENT_NAME"
-    if [[ -s "$dst" ]]; then
-      curl -fL --retry 10 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 1200 -C - "$TS3_CLIENT_URL" -o "$dst" || die "TeamSpeak 3.1.10 download/resume failed. Set OMNILINK_TS3_CLIENT_URL or OMNILINK_TS3_CLIENT_FILE to the exact TeamSpeak 3.1.10 package."
-    else
-      curl -fL --retry 10 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 1200 "$TS3_CLIENT_URL" -o "$dst" || die "TeamSpeak 3.1.10 tidak tersedia dari URL yang dikonfigurasi. Set OMNILINK_TS3_CLIENT_URL atau OMNILINK_TS3_CLIENT_FILE ke paket TeamSpeak 3.1.10 yang Anda berhak gunakan."
-    fi
+    local attempt=1
+    local downloaded=0
+    while [[ "$attempt" -le 10 ]]; do
+      if [[ -s "$dst" ]]; then
+        log "Resuming TeamSpeak 3.1.10 download (attempt $attempt/10)..."
+        if curl -fL --retry 3 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 600 -C - "$TS3_CLIENT_URL" -o "$dst"; then
+          downloaded=1
+          break
+        fi
+      else
+        if curl -fL --retry 3 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 600 "$TS3_CLIENT_URL" -o "$dst"; then
+          downloaded=1
+          break
+        fi
+      fi
+      attempt=$((attempt+1))
+      sleep 2
+    done
+    [[ "$downloaded" == "1" ]] || die "TeamSpeak 3.1.10 download failed after 10 attempts. Set OMNILINK_TS3_CLIENT_URL or OMNILINK_TS3_CLIENT_FILE to the exact TeamSpeak 3.1.10 package."
     src="$TMP_DIR/$TS3_CLIENT_NAME"
   fi
   echo "$TS3_CLIENT_SHA256  $src" | sha256sum -c - >/dev/null || die "SHA-256 TeamSpeak 3.1.10 tidak cocok"
